@@ -16,7 +16,7 @@ export function SearchInput({ value = '', onChange, placeholder = 'Search...', c
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedOnChange = useCallback(
-    debounce((val: unknown) => onChange(val as string), 300),
+    debounce((val: string) => onChange(val), 300),
     [onChange]
   );
 

@@ -17,24 +17,24 @@ import toast from 'react-hot-toast';
 
 // Mock data for when API isn't connected
 const mockLeads: Lead[] = [
-  { id: '1', firstName: 'Arjun', lastName: 'Sharma', email: 'arjun@example.com', phone: '9876543210', source: 'website', status: 'new', score: 85, tags: ['hot'], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '2', firstName: 'Priya', lastName: 'Patel', email: 'priya@example.com', source: 'referral', status: 'qualified', score: 72, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '3', firstName: 'Rahul', lastName: 'Gupta', email: 'rahul@example.com', phone: '9988776655', source: 'social_media', status: 'contacted', score: 45, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '4', firstName: 'Sunita', lastName: 'Kumar', email: 'sunita@example.com', source: 'email', status: 'new', score: 60, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '5', firstName: 'Vikram', lastName: 'Singh', email: 'vikram@example.com', source: 'advertisement', status: 'qualified', score: 91, tags: ['vip'], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '1', firstName: 'Arjun', lastName: 'Sharma', email: 'arjun@example.com', phone: '9876543210', source: 'website', status: 'new', score: 85, tags: ['hot'], tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '2', firstName: 'Priya', lastName: 'Patel', email: 'priya@example.com', source: 'referral', status: 'qualified', score: 72, tags: [], tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '3', firstName: 'Rahul', lastName: 'Gupta', email: 'rahul@example.com', phone: '9988776655', source: 'social_media', status: 'contacted', score: 45, tags: [], tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '4', firstName: 'Sunita', lastName: 'Kumar', email: 'sunita@example.com', source: 'email', status: 'new', score: 60, tags: [], tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '5', firstName: 'Vikram', lastName: 'Singh', email: 'vikram@example.com', source: 'advertisement', status: 'qualified', score: 91, tags: ['vip'], tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
 ];
 
 export default function LeadsPage() {
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [source, setSource] = useState('');
+  const [status, setStatus] = useState<Lead['status'] | ''>('');
+  const [source, setSource] = useState<Lead['source'] | ''>('');
   const [page, setPage] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
   const [sortKey, setSortKey] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  const { data, isLoading } = useLeads({ search, status: status as Lead['status'] || undefined, source: source as Lead['source'] || undefined, page, limit: 10 });
+  const { data, isLoading } = useLeads({ search, status: status || undefined, source: source || undefined, page, limit: 10 });
   const { mutateAsync: createLead, isPending } = useCreateLead();
 
   const leads = data?.data || mockLeads;
@@ -76,8 +76,8 @@ export default function LeadsPage() {
         status={status}
         source={source}
         onSearchChange={setSearch}
-        onStatusChange={setStatus}
-        onSourceChange={setSource}
+        onStatusChange={(v) => setStatus(v as Lead['status'] | '')}
+        onSourceChange={(v) => setSource(v as Lead['source'] | '')}
       />
 
       {/* Table */}

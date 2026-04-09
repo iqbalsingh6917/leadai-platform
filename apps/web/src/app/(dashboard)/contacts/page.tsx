@@ -16,9 +16,9 @@ import { Contact as ContactType, CreateContact } from '@/types/contact';
 import toast from 'react-hot-toast';
 
 const mockContacts: ContactType[] = [
-  { id: '1', firstName: 'Arjun', lastName: 'Sharma', email: 'arjun@infosys.com', phone: '9876543210', company: 'Infosys', lifecycleStage: 'customer', tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '2', firstName: 'Priya', lastName: 'Patel', email: 'priya@wipro.com', company: 'Wipro', lifecycleStage: 'opportunity', tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '3', firstName: 'Rahul', lastName: 'Gupta', email: 'rahul@tcs.com', company: 'TCS', lifecycleStage: 'sales_qualified_lead', tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '1', firstName: 'Arjun', lastName: 'Sharma', email: 'arjun@infosys.com', phone: '9876543210', company: 'Infosys', lifecycleStage: 'customer', tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '2', firstName: 'Priya', lastName: 'Patel', email: 'priya@wipro.com', company: 'Wipro', lifecycleStage: 'opportunity', tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '3', firstName: 'Rahul', lastName: 'Gupta', email: 'rahul@tcs.com', company: 'TCS', lifecycleStage: 'sales_qualified_lead', tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
 ];
 
 const lifecycleOptions = [

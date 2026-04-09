@@ -6,11 +6,11 @@ import { formatDate } from '@/lib/utils';
 import { Lead } from '@/types/lead';
 
 const mockLeads: Lead[] = [
-  { id: '1', firstName: 'Arjun', lastName: 'Sharma', email: 'arjun@example.com', source: 'website', status: 'new', score: 85, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '2', firstName: 'Priya', lastName: 'Patel', email: 'priya@example.com', source: 'referral', status: 'qualified', score: 72, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '3', firstName: 'Rahul', lastName: 'Gupta', email: 'rahul@example.com', source: 'social_media', status: 'contacted', score: 45, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '4', firstName: 'Sunita', lastName: 'Kumar', email: 'sunita@example.com', source: 'email', status: 'new', score: 60, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '5', firstName: 'Vikram', lastName: 'Singh', email: 'vikram@example.com', source: 'advertisement', status: 'qualified', score: 91, tags: [], tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '1', firstName: 'Arjun', lastName: 'Sharma', email: 'arjun@example.com', source: 'website', status: 'new', score: 85, tags: [], tenantId: 't1', createdAt: '2026-04-05T10:00:00Z', updatedAt: '2026-04-05T10:00:00Z' },
+  { id: '2', firstName: 'Priya', lastName: 'Patel', email: 'priya@example.com', source: 'referral', status: 'qualified', score: 72, tags: [], tenantId: 't1', createdAt: '2026-04-04T09:00:00Z', updatedAt: '2026-04-04T09:00:00Z' },
+  { id: '3', firstName: 'Rahul', lastName: 'Gupta', email: 'rahul@example.com', source: 'social_media', status: 'contacted', score: 45, tags: [], tenantId: 't1', createdAt: '2026-04-03T08:00:00Z', updatedAt: '2026-04-03T08:00:00Z' },
+  { id: '4', firstName: 'Sunita', lastName: 'Kumar', email: 'sunita@example.com', source: 'email', status: 'new', score: 60, tags: [], tenantId: 't1', createdAt: '2026-04-02T07:00:00Z', updatedAt: '2026-04-02T07:00:00Z' },
+  { id: '5', firstName: 'Vikram', lastName: 'Singh', email: 'vikram@example.com', source: 'advertisement', status: 'qualified', score: 91, tags: [], tenantId: 't1', createdAt: '2026-04-01T06:00:00Z', updatedAt: '2026-04-01T06:00:00Z' },
 ];
 
 const statusVariant: Record<string, 'success' | 'warning' | 'info' | 'neutral'> = {

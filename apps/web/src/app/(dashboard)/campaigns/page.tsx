@@ -14,10 +14,10 @@ import { Campaign, CreateCampaign } from '@/types/campaign';
 import toast from 'react-hot-toast';
 
 const mockCampaigns: Campaign[] = [
-  { id: '1', name: 'Spring Email Blast', type: 'email', status: 'active', budget: 50000, spent: 32000, startDate: '2026-03-01', endDate: '2026-04-30', tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '2', name: 'WhatsApp Re-engagement', type: 'whatsapp', status: 'draft', budget: 20000, spent: 0, tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '3', name: 'Google Ads Q2', type: 'ads', status: 'active', budget: 150000, spent: 89000, startDate: '2026-04-01', endDate: '2026-06-30', tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '4', name: 'SMS Flash Sale', type: 'sms', status: 'completed', budget: 15000, spent: 14800, startDate: '2026-02-14', endDate: '2026-02-16', tenantId: 't1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '1', name: 'Spring Email Blast', type: 'email', status: 'active', budget: 50000, spent: 32000, startDate: '2026-03-01', endDate: '2026-04-30', tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '2', name: 'WhatsApp Re-engagement', type: 'whatsapp', status: 'draft', budget: 20000, spent: 0, tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '3', name: 'Google Ads Q2', type: 'ads', status: 'active', budget: 150000, spent: 89000, startDate: '2026-04-01', endDate: '2026-06-30', tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
+  { id: '4', name: 'SMS Flash Sale', type: 'sms', status: 'completed', budget: 15000, spent: 14800, startDate: '2026-02-14', endDate: '2026-02-16', tenantId: 't1', createdAt: '2026-04-01T00:00:00Z', updatedAt: '2026-04-01T00:00:00Z' },
 ];
 
 const typeOptions = [

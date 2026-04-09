@@ -24,8 +24,8 @@ const mockLead: Lead = {
   notes: 'Interested in enterprise plan. Follow up needed.',
   tags: ['hot', 'enterprise'],
   tenantId: 't1',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: '2026-04-01T00:00:00Z',
+  updatedAt: '2026-04-01T00:00:00Z',
 };
 
 export default function LeadDetailPage() {

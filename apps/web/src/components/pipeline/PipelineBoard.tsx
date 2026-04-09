@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { PipelineStage, Deal } from '@/types/pipeline';
+import { PipelineStage, Deal, CreateDeal } from '@/types/pipeline';
 import { PipelineColumn } from './PipelineColumn';
 import { Modal } from '@/components/ui/Modal';
 import { DealForm } from './DealForm';
@@ -109,7 +109,7 @@ export function PipelineBoard({ stages: initialStages, onMoveDeal, onCreateDeal,
         {addModal && (
           <DealForm
             stageId={addModal.stageId}
-            onSubmit={(data) => handleCreateDeal(data as { title: string; value: number; stageId: string })}
+            onSubmit={(data) => handleCreateDeal(data as CreateDeal)}
             loading={loading}
             onCancel={() => setAddModal(null)}
           />
