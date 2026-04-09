@@ -28,7 +28,7 @@ check_command() {
     echo "  $2"
     exit 1
   else
-    echo -e "${GREEN}✓ $1 found$(command -v "$1" | xargs -- basename --) — OK${NC}"
+    echo -e "${GREEN}✓ $1 found — OK${NC}"
   fi
 }
 
