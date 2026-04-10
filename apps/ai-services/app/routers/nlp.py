@@ -33,7 +33,7 @@ async def summarize(
         key_points = lines[1:4] if len(lines) > 1 else []
         recommended_actions = lines[4:] if len(lines) > 4 else ["Follow up with the lead."]
     except Exception:
-        summary = "Unable to generate summary — no LLM provider configured."
+        summary = "Unable to generate summary at this time. Please try again later."
         key_points = []
         recommended_actions = ["Review lead context manually."]
     return SummaryResponse(

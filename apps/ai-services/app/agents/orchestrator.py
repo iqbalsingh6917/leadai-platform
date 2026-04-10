@@ -124,15 +124,13 @@ class OrchestratorAgent:
 
     def _generate_summary(self, state: AgentState) -> AgentState:
         import asyncio
+        import concurrent.futures
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    future = pool.submit(asyncio.run, self._generate_summary_async(state))
-                    return future.result()
-            else:
-                return loop.run_until_complete(self._generate_summary_async(state))
+            # Always run in a new thread to avoid nested-event-loop issues when
+            # called from within a running loop (e.g. FastAPI / uvicorn).
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(asyncio.run, self._generate_summary_async(state))
+                return future.result()
         except Exception as exc:
             state["error"] = str(exc)
             return state
