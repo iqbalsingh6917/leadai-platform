@@ -233,6 +233,10 @@ export class WhatsAppService {
   ): Promise<string> {
     const config = await this.getConfig(tenantId);
     if (mode === 'subscribe' && config && token === config.verifyToken) {
+      // Meta hub.challenge is a numeric string; validate before echoing
+      if (!/^\d+$/.test(challenge)) {
+        throw new ForbiddenException('Invalid challenge format');
+      }
       return challenge;
     }
     throw new ForbiddenException('Webhook verification failed');
