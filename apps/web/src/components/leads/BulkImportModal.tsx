@@ -23,6 +23,7 @@ function downloadSampleCSV() {
   link.href = dataUrl;
   link.download = 'sample-leads.csv';
   link.click();
+  link.remove();
 }
 
 interface ImportResult {

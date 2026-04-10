@@ -59,8 +59,11 @@ export function LeadDetail({ lead, onEdit }: LeadDetailProps) {
       await assignLead({ id: lead.id, assignedTo: reassignId });
       toast.success('Lead reassigned');
       setReassignId('');
-    } catch {
-      toast.error('Reassign failed');
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Reassign failed';
+      toast.error(msg);
     }
   }
 

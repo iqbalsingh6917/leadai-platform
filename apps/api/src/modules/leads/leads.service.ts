@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, Not, In } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { parse } from 'csv-parse/sync';
@@ -123,22 +123,30 @@ export class LeadsService {
       throw new BadRequestException('No active agents available');
     }
 
-    // Count active leads per agent (not converted or lost)
-    const counts = await Promise.all(
-      agents.map(async (agent) => {
-        const count = await this.leadRepository.count({
-          where: {
-            tenantId,
-            assignedTo: agent.id,
-            status: Not(In([LeadStatus.CONVERTED, LeadStatus.LOST])),
-          },
-        });
-        return { agent, count };
-      }),
+    // Fetch active lead counts per agent in a single query
+    const countRows: { assignedTo: string; count: string }[] = await this.leadRepository
+      .createQueryBuilder('lead')
+      .select('lead.assignedTo', 'assignedTo')
+      .addSelect('COUNT(lead.id)', 'count')
+      .where('lead.tenantId = :tenantId', { tenantId })
+      .andWhere('lead.status NOT IN (:...statuses)', {
+        statuses: [LeadStatus.CONVERTED, LeadStatus.LOST],
+      })
+      .andWhere('lead.assignedTo IN (:...agentIds)', {
+        agentIds: agents.map((a) => a.id),
+      })
+      .groupBy('lead.assignedTo')
+      .getRawMany();
+
+    const countMap = new Map<string, number>(
+      countRows.map((r) => [r.assignedTo, parseInt(r.count, 10)]),
     );
 
-    counts.sort((a, b) => a.count - b.count);
-    const pickedAgent = counts[0].agent;
+    const pickedAgent = agents.reduce((min, agent) => {
+      const minCount = countMap.get(min.id) ?? 0;
+      const agentCount = countMap.get(agent.id) ?? 0;
+      return agentCount < minCount ? agent : min;
+    });
 
     return this.assign(id, pickedAgent.id, tenantId);
   }
@@ -161,7 +169,7 @@ export class LeadsService {
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const rowNum = i + 2; // 1-indexed + header row
+      const rowNum = i + 2; // row 1 is the header; data rows start at row 2
 
       if (!row.firstName || !row.firstName.trim()) {
         errors.push(`Row ${rowNum}: firstName is required`);
