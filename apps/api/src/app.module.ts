@@ -7,6 +7,9 @@ import { ContactsModule } from './modules/contacts/contacts.module';
 import { PipelinesModule } from './modules/pipelines/pipelines.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { ActivityModule } from './modules/activity/activity.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     PipelinesModule,
     CampaignsModule,
     AnalyticsModule,
+    ActivityModule,
+    WebhooksModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

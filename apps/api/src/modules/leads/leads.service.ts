@@ -7,6 +7,8 @@ import { Lead } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { LeadFilterDto } from './dto/lead-filter.dto';
+import { ActivityService } from '../activity/activity.service';
+import { ActivityAction, ActivityEntityType } from '../activity/entities/activity-log.entity';
 
 @Injectable()
 export class LeadsService {
@@ -17,6 +19,7 @@ export class LeadsService {
     @InjectRepository(Lead)
     private readonly leadRepository: Repository<Lead>,
     private readonly httpService: HttpService,
+    private readonly activityService: ActivityService,
   ) {}
 
   async findAll(tenantId: string, filters: LeadFilterDto) {
@@ -53,6 +56,13 @@ export class LeadsService {
     const lead = this.leadRepository.create({ ...dto, tenantId });
     const saved = await this.leadRepository.save(lead);
     await this.triggerScoring(saved.id, saved, tenantId);
+    await this.activityService.log({
+      entityType: ActivityEntityType.LEAD,
+      entityId: saved.id,
+      action: ActivityAction.CREATED,
+      tenantId,
+      description: 'Lead created',
+    });
     return saved;
   }
 
@@ -61,12 +71,26 @@ export class LeadsService {
     Object.assign(lead, dto);
     const saved = await this.leadRepository.save(lead);
     await this.triggerScoring(saved.id, saved, tenantId);
+    await this.activityService.log({
+      entityType: ActivityEntityType.LEAD,
+      entityId: saved.id,
+      action: ActivityAction.UPDATED,
+      tenantId,
+      description: 'Lead updated',
+    });
     return saved;
   }
 
   async remove(id: string, tenantId: string) {
     const lead = await this.findOne(id, tenantId);
     await this.leadRepository.remove(lead);
+    await this.activityService.log({
+      entityType: ActivityEntityType.LEAD,
+      entityId: id,
+      action: ActivityAction.DELETED,
+      tenantId,
+      description: 'Lead deleted',
+    });
   }
 
   async triggerScoring(leadId: string, lead: Lead, tenantId: string): Promise<void> {
