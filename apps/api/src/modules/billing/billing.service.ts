@@ -85,7 +85,7 @@ export class BillingService {
     }
 
     Object.assign(subscription, {
-      planId: dto.planId as unknown as PlanId,
+      planId: dto.planId,
       status: SubscriptionStatus.ACTIVE,
       razorpaySubscriptionId: dto.razorpayOrderId,
       currentPeriodStart: now,
