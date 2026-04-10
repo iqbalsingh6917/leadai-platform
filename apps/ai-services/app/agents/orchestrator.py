@@ -4,11 +4,26 @@ from langgraph.graph import StateGraph, END
 
 logger = logging.getLogger(__name__)
 
+VALID_TASKS = {
+    "score_lead",
+    "score_lead_advanced",
+    "analyze_intent",
+    "generate_summary",
+    "generate_followup",
+    "optimize_budget",
+    "copilot_chat",
+    "forecast_revenue",
+    "analyze_sentiment",
+    "detect_competitors",
+    "handle_objections",
+    "coach_deal",
+}
+
 
 class AgentState(TypedDict):
     tenant_id: str
     lead_id: str
-    task_type: str  # "score_lead" | "analyze_intent" | "generate_summary"
+    task_type: str
     input_data: dict
     output_data: Optional[dict]
     error: Optional[str]
@@ -16,21 +31,48 @@ class AgentState(TypedDict):
 
 
 class OrchestratorAgent:
-    """Routes tasks to appropriate specialist agents."""
+    """Routes tasks to all 11 specialist agents."""
 
     def __init__(self, scoring_engine, nlp_processor, llm_gateway):
         self.scoring_engine = scoring_engine
         self.nlp_processor = nlp_processor
         self.llm_gateway = llm_gateway
+        self._init_agents()
         self.graph = self.build_graph()
+
+    def _init_agents(self):
+        from app.agents.lead_scoring_agent import LeadScoringAgent
+        from app.agents.intent_analysis_agent import IntentAnalysisAgent
+        from app.agents.summary_agent import SummaryAgent
+        from app.agents.followup_agent import FollowupAgent
+        from app.agents.budget_optimizer_agent import BudgetOptimizerAgent
+        from app.agents.copilot_agent import CopilotAgent
+        from app.agents.revenue_forecast_agent import RevenueForecastAgent
+        from app.agents.sentiment_agent import SentimentAgent
+        from app.agents.competitor_agent import CompetitorAgent
+        from app.agents.objection_handler_agent import ObjectionHandlerAgent
+        from app.agents.deal_coach_agent import DealCoachAgent
+
+        self.agents = {
+            "score_lead": LeadScoringAgent(self.scoring_engine, self.llm_gateway),
+            "score_lead_advanced": LeadScoringAgent(self.scoring_engine, self.llm_gateway),
+            "analyze_intent": IntentAnalysisAgent(self.nlp_processor),
+            "generate_summary": SummaryAgent(self.llm_gateway),
+            "generate_followup": FollowupAgent(self.llm_gateway),
+            "optimize_budget": BudgetOptimizerAgent(self.llm_gateway),
+            "copilot_chat": CopilotAgent(self.llm_gateway),
+            "forecast_revenue": RevenueForecastAgent(self.llm_gateway),
+            "analyze_sentiment": SentimentAgent(),
+            "detect_competitors": CompetitorAgent(self.llm_gateway),
+            "handle_objections": ObjectionHandlerAgent(self.llm_gateway),
+            "coach_deal": DealCoachAgent(self.llm_gateway),
+        }
 
     def build_graph(self) -> StateGraph:
         workflow = StateGraph(AgentState)
 
         workflow.add_node("route_task", self._route_task)
-        workflow.add_node("score_lead", self._score_lead)
-        workflow.add_node("analyze_intent", self._analyze_intent)
-        workflow.add_node("generate_summary", self._generate_summary_async)
+        workflow.add_node("dispatch_agent", self._dispatch_agent)
         workflow.add_node("format_output", self._format_output)
         workflow.add_node("handle_error", self._handle_error)
 
@@ -40,16 +82,12 @@ class OrchestratorAgent:
             "route_task",
             self._select_handler,
             {
-                "score_lead": "score_lead",
-                "analyze_intent": "analyze_intent",
-                "generate_summary": "generate_summary",
+                "dispatch_agent": "dispatch_agent",
                 "handle_error": "handle_error",
             },
         )
 
-        workflow.add_edge("score_lead", "format_output")
-        workflow.add_edge("analyze_intent", "format_output")
-        workflow.add_edge("generate_summary", "format_output")
+        workflow.add_edge("dispatch_agent", "format_output")
         workflow.add_edge("format_output", END)
         workflow.add_edge("handle_error", END)
 
@@ -58,68 +96,27 @@ class OrchestratorAgent:
     def _select_handler(self, state: AgentState) -> str:
         if state.get("error"):
             return "handle_error"
-        task_type = state.get("task_type", "")
-        if task_type == "score_lead":
-            return "score_lead"
-        elif task_type == "analyze_intent":
-            return "analyze_intent"
-        elif task_type == "generate_summary":
-            return "generate_summary"
-        return "handle_error"
+        return "dispatch_agent"
 
     def _route_task(self, state: AgentState) -> AgentState:
-        valid_tasks = {"score_lead", "analyze_intent", "generate_summary"}
-        if state.get("task_type") not in valid_tasks:
+        if state.get("task_type") not in VALID_TASKS:
             state["error"] = f"Unknown task_type: {state.get('task_type')}"
         return state
 
-    def _score_lead(self, state: AgentState) -> AgentState:
+    async def _dispatch_agent(self, state: AgentState) -> AgentState:
+        task_type = state["task_type"]
+        agent = self.agents.get(task_type)
+        if not agent:
+            state["error"] = f"No agent registered for task_type: {task_type}"
+            state["output_data"] = {"error": state["error"]}
+            return state
         try:
-            from app.models.lead import LeadData
-            lead_data = state["input_data"].get("lead", {})
-            lead = LeadData(**lead_data)
-            result = self.scoring_engine.score(lead)
-            state["output_data"] = result.model_dump()
+            result = await agent.run(state["input_data"])
+            state["output_data"] = result
         except Exception as exc:
-            logger.error("Score lead failed: %s", exc)
+            logger.error("Agent dispatch failed for %s: %s", task_type, exc)
             state["error"] = str(exc)
-        return state
-
-    def _analyze_intent(self, state: AgentState) -> AgentState:
-        try:
-            from app.models.lead import IntentRequest
-            request = IntentRequest(**state["input_data"])
-            result = self.nlp_processor.process(request)
-            state["output_data"] = result.model_dump()
-        except Exception as exc:
-            logger.error("Analyze intent failed: %s", exc)
-            state["error"] = str(exc)
-        return state
-
-    async def _generate_summary_async(self, state: AgentState) -> AgentState:
-        try:
-            context = state["input_data"].get("context", "")
-            prompt = (
-                f"Summarize the following lead context and provide key points and recommended actions.\n"
-                f"Context: {context}\n"
-            )
-            summary_text = await self.llm_gateway.complete(
-                prompt, system="You are a helpful CRM assistant."
-            )
-            lines = [line.strip() for line in summary_text.split("\n") if line.strip()]
-            state["output_data"] = {
-                "summary": lines[0] if lines else summary_text,
-                "key_points": lines[1:4] if len(lines) > 1 else [],
-                "recommended_actions": lines[4:] if len(lines) > 4 else ["Follow up with the lead."],
-            }
-        except Exception as exc:
-            logger.error("Generate summary failed: %s", exc)
-            state["error"] = str(exc)
-            state["output_data"] = {
-                "summary": "Summary generation failed.",
-                "key_points": [],
-                "recommended_actions": ["Review lead manually."],
-            }
+            state["output_data"] = {"error": str(exc)}
         return state
 
     def _format_output(self, state: AgentState) -> AgentState:

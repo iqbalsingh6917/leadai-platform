@@ -19,9 +19,9 @@ import {
   CreditCard,
   MessageSquare,
   Send,
+  Workflow,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -29,6 +29,7 @@ const navItems = [
   { href: '/pipeline', icon: GitBranch, label: 'Pipeline' },
   { href: '/contacts', icon: Contact, label: 'Contacts' },
   { href: '/campaigns', icon: Megaphone, label: 'Campaigns' },
+  { href: '/workflows', icon: Workflow, label: 'Workflows' },
   { href: '/email-templates', icon: Mail, label: 'Email Templates' },
   { href: '/email-sequences', icon: ListOrdered, label: 'Sequences' },
   { href: '/whatsapp', icon: MessageSquare, label: 'WhatsApp' },

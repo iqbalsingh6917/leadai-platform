@@ -78,4 +78,9 @@ export class LeadsController {
   autoAssignLead(@Param('id') id: string, @GetTenant() tenantId: string) {
     return this.leadsService.autoAssign(id, tenantId);
   }
+
+  @Post(':id/ai-score')
+  aiScore(@Param('id') id: string, @GetTenant() tenantId: string) {
+    return this.leadsService.aiScore(id, tenantId);
+  }
 }

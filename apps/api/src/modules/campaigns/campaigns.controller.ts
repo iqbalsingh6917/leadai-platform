@@ -55,4 +55,12 @@ export class CampaignsController {
   remove(@Param('id') id: string, @GetTenant() tenantId: string) {
     return this.campaignsService.remove(id, tenantId);
   }
+
+  @Post('ai-optimize')
+  aiOptimize(
+    @Body() body: { campaigns: { id: string; name: string; spend: number; leads: number; conversions: number }[] },
+    @GetTenant() tenantId: string,
+  ) {
+    return this.campaignsService.aiOptimize(body.campaigns, tenantId);
+  }
 }

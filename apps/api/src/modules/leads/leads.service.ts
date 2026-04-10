@@ -227,6 +227,62 @@ export class LeadsService {
     return { imported, failed, errors };
   }
 
+  async aiScore(id: string, tenantId: string) {
+    const lead = await this.findOne(id, tenantId);
+    try {
+      const payload = {
+        task_type: 'score_lead_advanced',
+        lead_id: id,
+        tenant_id: tenantId,
+        input_data: {
+          lead: {
+            id: lead.id,
+            firstName: lead.firstName,
+            lastName: lead.lastName,
+            email: lead.email ?? null,
+            phone: lead.phone ?? null,
+            company: lead.company ?? null,
+            source: lead.source,
+            status: lead.status,
+            notes: lead.notes ?? null,
+            tags: lead.tags ?? [],
+          },
+        },
+      };
+      const response = await firstValueFrom(
+        this.httpService.post<{ result: any }>(
+          `${this.aiServiceUrl}/agents/run`,
+          payload,
+          { timeout: this.aiScoringTimeoutMs },
+        ),
+      );
+      const result = response.data?.result ?? {};
+      const aiScore = result.score ?? lead.score;
+      const aiReasoning = result.reasoning ?? null;
+      const tier = result.tier ?? (aiScore >= 70 ? 'hot' : aiScore >= 40 ? 'warm' : 'cold');
+
+      await this.leadRepository.update(id, { aiScore, aiReasoning });
+
+      return {
+        score: aiScore,
+        tier,
+        reasoning: aiReasoning,
+        signals: result.breakdown ?? {},
+        recommendations: result.recommended_actions ?? [],
+      };
+    } catch (err) {
+      this.logger.warn(`Advanced AI scoring unavailable for lead ${id}, using rule-based fallback`);
+      const tier = lead.score >= 70 ? 'hot' : lead.score >= 40 ? 'warm' : 'cold';
+      return {
+        score: lead.score,
+        tier,
+        reasoning: 'AI service unavailable. Score based on rule-based signals.',
+        signals: {},
+        recommendations: ['Follow up with the lead.'],
+      };
+    }
+  }
+
   async triggerScoring(leadId: string, lead: Lead, tenantId: string): Promise<void> {
     /**
      * Fire-and-forget call to the AI scoring service.

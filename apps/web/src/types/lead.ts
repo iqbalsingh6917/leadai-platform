@@ -11,6 +11,8 @@ export interface Lead {
   source: LeadSource;
   status: LeadStatus;
   score: number;
+  aiScore?: number | null;
+  aiReasoning?: string | null;
   notes?: string;
   tags: string[];
   assignedTo?: string;

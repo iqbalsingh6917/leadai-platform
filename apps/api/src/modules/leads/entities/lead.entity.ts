@@ -63,6 +63,12 @@ export class Lead {
   @Column({ type: 'uuid', nullable: true })
   assignedTo: string;
 
+  @Column({ type: 'int', nullable: true })
+  aiScore: number | null;
+
+  @Column({ type: 'text', nullable: true })
+  aiReasoning: string | null;
+
   @Column({ type: 'uuid' })
   tenantId: string;
 
