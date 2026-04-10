@@ -6,6 +6,8 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { Campaign } from './entities/campaign.entity';
 import { CreateCampaignDto, UpdateCampaignDto } from './dto/campaign.dto';
+import { AutopilotRule } from './entities/autopilot-rule.entity';
+import { CreateAutopilotRuleDto, UpdateAutopilotRuleDto } from './dto/autopilot.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -15,6 +17,8 @@ export class CampaignsService {
   constructor(
     @InjectRepository(Campaign)
     private readonly campaignRepository: Repository<Campaign>,
+    @InjectRepository(AutopilotRule)
+    private readonly autopilotRuleRepository: Repository<AutopilotRule>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
@@ -97,5 +101,34 @@ export class CampaignsService {
         projectedImprovement: 0,
       };
     }
+  }
+
+  async createRule(tenantId: string, dto: CreateAutopilotRuleDto): Promise<AutopilotRule> {
+    const rule = this.autopilotRuleRepository.create({ ...dto, tenantId });
+    return this.autopilotRuleRepository.save(rule);
+  }
+
+  async listRules(tenantId: string): Promise<AutopilotRule[]> {
+    return this.autopilotRuleRepository.find({ where: { tenantId } });
+  }
+
+  async updateRule(tenantId: string, id: string, dto: UpdateAutopilotRuleDto): Promise<AutopilotRule> {
+    const rule = await this.autopilotRuleRepository.findOne({ where: { id, tenantId } });
+    if (!rule) throw new NotFoundException('Autopilot rule not found');
+    Object.assign(rule, dto);
+    return this.autopilotRuleRepository.save(rule);
+  }
+
+  async deleteRule(tenantId: string, id: string): Promise<void> {
+    const rule = await this.autopilotRuleRepository.findOne({ where: { id, tenantId } });
+    if (!rule) throw new NotFoundException('Autopilot rule not found');
+    await this.autopilotRuleRepository.remove(rule);
+  }
+
+  async toggleRule(tenantId: string, id: string): Promise<AutopilotRule> {
+    const rule = await this.autopilotRuleRepository.findOne({ where: { id, tenantId } });
+    if (!rule) throw new NotFoundException('Autopilot rule not found');
+    rule.isActive = !rule.isActive;
+    return this.autopilotRuleRepository.save(rule);
   }
 }

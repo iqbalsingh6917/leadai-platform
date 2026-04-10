@@ -18,6 +18,13 @@ import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { WhatsAppDripModule } from './modules/whatsapp-drip/whatsapp-drip.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { CopilotModule } from './modules/copilot/copilot.module';
+import { WhiteLabelModule } from './modules/white-label/white-label.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { I18nModule } from './modules/i18n/i18n.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { WorkspacesModule } from './modules/workspaces/workspaces.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { PartnersModule } from './modules/partners/partners.module';
 
 @Module({
   imports: [
@@ -55,6 +62,13 @@ import { CopilotModule } from './modules/copilot/copilot.module';
     WhatsAppDripModule,
     WorkflowsModule,
     CopilotModule,
+    WhiteLabelModule,
+    IntegrationsModule,
+    I18nModule,
+    RolesModule,
+    WorkspacesModule,
+    ReportsModule,
+    PartnersModule,
   ],
 })
 export class AppModule {}

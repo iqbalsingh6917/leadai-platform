@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetTenant } from '../../common/decorators/tenant.decorator';
 import { CampaignsService } from './campaigns.service';
 import { CreateCampaignDto, UpdateCampaignDto } from './dto/campaign.dto';
+import { CreateAutopilotRuleDto, UpdateAutopilotRuleDto } from './dto/autopilot.dto';
 
 @ApiTags('campaigns')
 @ApiBearerAuth()
@@ -62,5 +63,31 @@ export class CampaignsController {
     @GetTenant() tenantId: string,
   ) {
     return this.campaignsService.aiOptimize(body.campaigns, tenantId);
+  }
+
+  @Get('autopilot/rules')
+  listRules(@GetTenant() tenantId: string) {
+    return this.campaignsService.listRules(tenantId);
+  }
+
+  @Post('autopilot/rules')
+  createRule(@Body() dto: CreateAutopilotRuleDto, @GetTenant() tenantId: string) {
+    return this.campaignsService.createRule(tenantId, dto);
+  }
+
+  @Patch('autopilot/rules/:id')
+  updateRule(@Param('id') id: string, @Body() dto: UpdateAutopilotRuleDto, @GetTenant() tenantId: string) {
+    return this.campaignsService.updateRule(tenantId, id, dto);
+  }
+
+  @Delete('autopilot/rules/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteRule(@Param('id') id: string, @GetTenant() tenantId: string) {
+    return this.campaignsService.deleteRule(tenantId, id);
+  }
+
+  @Patch('autopilot/rules/:id/toggle')
+  toggleRule(@Param('id') id: string, @GetTenant() tenantId: string) {
+    return this.campaignsService.toggleRule(tenantId, id);
   }
 }

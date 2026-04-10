@@ -20,6 +20,12 @@ import {
   MessageSquare,
   Send,
   Workflow,
+  Plug,
+  Building2,
+  Handshake,
+  Palette,
+  Globe,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,14 +36,21 @@ const navItems = [
   { href: '/contacts', icon: Contact, label: 'Contacts' },
   { href: '/campaigns', icon: Megaphone, label: 'Campaigns' },
   { href: '/workflows', icon: Workflow, label: 'Workflows' },
+  { href: '/integrations', icon: Plug, label: 'Integrations' },
   { href: '/email-templates', icon: Mail, label: 'Email Templates' },
   { href: '/email-sequences', icon: ListOrdered, label: 'Sequences' },
   { href: '/whatsapp', icon: MessageSquare, label: 'WhatsApp' },
   { href: '/whatsapp-drip', icon: Send, label: 'WhatsApp Drip' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/reports', icon: BarChart3, label: 'Reports' },
+  { href: '/workspaces', icon: Building2, label: 'Workspaces' },
   { href: '/team', icon: UsersRound, label: 'Team' },
+  { href: '/team/roles', icon: Shield, label: 'Roles' },
+  { href: '/partners', icon: Handshake, label: 'Partner Program' },
   { href: '/billing', icon: CreditCard, label: 'Billing' },
   { href: '/settings', icon: Settings, label: 'Settings' },
+  { href: '/settings/white-label', icon: Palette, label: 'White Label' },
+  { href: '/settings/language', icon: Globe, label: 'Language' },
 ];
 
 interface SidebarProps {
