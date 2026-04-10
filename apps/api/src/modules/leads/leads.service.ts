@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Repository, Like } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -15,9 +16,9 @@ import { User, UserRole } from '../auth/entities/user.entity';
 @Injectable()
 export class LeadsService {
   private readonly logger = new Logger(LeadsService.name);
-  private readonly aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-  /** Timeout (ms) for calls to the AI scoring service */
-  private readonly aiScoringTimeoutMs = parseInt(process.env.AI_SCORING_TIMEOUT_MS ?? '5000', 10);
+  private readonly aiServiceUrl: string;
+  /** Timeout (ms) for calls to the AI scoring service — configurable via AI_SCORING_TIMEOUT_MS */
+  private readonly aiScoringTimeoutMs: number;
 
   constructor(
     @InjectRepository(Lead)
@@ -26,7 +27,11 @@ export class LeadsService {
     private readonly userRepository: Repository<User>,
     private readonly httpService: HttpService,
     private readonly activityService: ActivityService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.aiServiceUrl = this.configService.get<string>('AI_SERVICE_URL', 'http://localhost:8000');
+    this.aiScoringTimeoutMs = this.configService.get<number>('AI_SCORING_TIMEOUT_MS', 5000);
+  }
 
   async findAll(tenantId: string, filters: LeadFilterDto) {
     const { status, source, search, page = 1, limit = 20 } = filters;
@@ -169,7 +174,9 @@ export class LeadsService {
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const rowNum = i + 2; // row 1 is the header; data rows start at row 2
+      /** CSV row 1 is the header, so data rows start at row 2 */
+      const CSV_HEADER_OFFSET = 2;
+      const rowNum = i + CSV_HEADER_OFFSET;
 
       if (!row.firstName || !row.firstName.trim()) {
         errors.push(`Row ${rowNum}: firstName is required`);

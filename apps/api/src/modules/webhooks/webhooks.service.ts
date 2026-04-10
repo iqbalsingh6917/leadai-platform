@@ -7,7 +7,7 @@ import { LeadsService } from '../leads/leads.service';
 import { LeadSource } from '../leads/entities/lead.entity';
 
 /** Placeholder name used when a webhook payload omits the first name */
-const UNKNOWN_FIRST_NAME = '[No Name Provided]';
+const DEFAULT_FIRST_NAME = '[No Name Provided]';
 
 @Injectable()
 export class WebhooksService {
@@ -36,7 +36,7 @@ export class WebhooksService {
       const fields = this.extractFacebookFields(payload);
       const lead = await this.leadsService.create(
         {
-          firstName: fields.first_name || UNKNOWN_FIRST_NAME,
+          firstName: fields.first_name || DEFAULT_FIRST_NAME,
           lastName: fields.last_name || '',
           email: fields.email,
           phone: fields.phone_number,
@@ -75,7 +75,7 @@ export class WebhooksService {
       const fields = this.extractGoogleFields(payload);
       const lead = await this.leadsService.create(
         {
-          firstName: fields.FIRST_NAME || UNKNOWN_FIRST_NAME,
+          firstName: fields.FIRST_NAME || DEFAULT_FIRST_NAME,
           lastName: fields.LAST_NAME || '',
           email: fields.EMAIL,
           phone: fields.PHONE_NUMBER,

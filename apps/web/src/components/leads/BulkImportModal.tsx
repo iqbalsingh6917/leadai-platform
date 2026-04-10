@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useBulkImport } from '@/hooks/useLeads';
+import { pluralize } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Upload, Download, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -58,7 +59,7 @@ export function BulkImportModal({ isOpen, onClose }: BulkImportModalProps) {
       const res = await bulkImport(formData);
       setResult(res);
       if (res.imported > 0) {
-        toast.success(`Imported ${res.imported} lead${res.imported !== 1 ? 's' : ''}`);
+        toast.success(`Imported ${res.imported} ${pluralize(res.imported, 'lead')}`);
       }
     } catch {
       toast.error('Import failed');

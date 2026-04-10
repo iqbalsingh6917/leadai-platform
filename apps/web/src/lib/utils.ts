@@ -24,6 +24,10 @@ export function getInitials(firstName: string, lastName?: string): string {
     .slice(0, 2);
 }
 
+export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return count === 1 ? singular : plural;
+}
+
 export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
   fn: T,
   delay: number,

@@ -12,6 +12,7 @@ import { PageSpinner } from '@/components/ui/Spinner';
 import { InviteForm } from '@/components/team/InviteForm';
 import { useTeamMembers, useUpdateTeamMember, useDeactivateTeamMember } from '@/hooks/useTeam';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 import { TeamMember } from '@/types/team';
 import toast from 'react-hot-toast';
 
@@ -117,7 +118,7 @@ export default function TeamPage() {
                       options={roleOptions}
                       value={member.role}
                       onChange={(e) => handleRoleChange(member, e.target.value)}
-                      className={`text-xs py-1 px-2 border-0 bg-transparent font-medium cursor-pointer ${roleBadgeClass[member.role]}`}
+                      className={cn('text-xs py-1 px-2 border-0 bg-transparent font-medium cursor-pointer', roleBadgeClass[member.role])}
                     />
                   </td>
                   <td className="px-4 py-3">
