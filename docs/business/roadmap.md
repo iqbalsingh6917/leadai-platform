@@ -16,8 +16,8 @@ LeadAI Platform is being built in 4 phases, progressing from a focused MVP to a 
 | 2 | Lead CRUD + Bulk Import (CSV) | P0 | ✅ Done |
 | 3 | AI Lead Scoring (basic) | P0 | ✅ Done |
 | 4 | Single Visual Pipeline (Drag & Drop) | P0 | ✅ Done |
-| 5 | WhatsApp Business API Integration | P0 | 🔲 Planned |
-| 6 | WhatsApp Drip Campaigns (basic) | P0 | 🔲 Planned |
+| 5 | WhatsApp Business API Integration | P0 | ✅ Done |
+| 6 | WhatsApp Drip Campaigns (basic) | P0 | ✅ Done |
 | 7 | Email Automation (sequences + templates) | P0 | ✅ Done |
 | 8 | Team Management + RBAC (3 roles) | P0 | ✅ Done |
 | 9 | Basic Subscription + Razorpay Billing | P0 | ✅ Done |

@@ -17,6 +17,8 @@ const pageTitles: Record<string, string> = {
   '/analytics': 'Analytics',
   '/settings': 'Settings',
   '/billing': 'Billing',
+  '/whatsapp': 'WhatsApp',
+  '/whatsapp-drip': 'WhatsApp Drip',
 };
 
 function getTitle(pathname: string): string {

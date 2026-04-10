@@ -14,6 +14,8 @@ import { TeamModule } from './modules/team/team.module';
 import { EmailTemplatesModule } from './modules/email-templates/email-templates.module';
 import { EmailSequencesModule } from './modules/email-sequences/email-sequences.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
+import { WhatsAppDripModule } from './modules/whatsapp-drip/whatsapp-drip.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { BillingModule } from './modules/billing/billing.module';
     EmailTemplatesModule,
     EmailSequencesModule,
     BillingModule,
+    WhatsAppModule,
+    WhatsAppDripModule,
   ],
 })
 export class AppModule {}

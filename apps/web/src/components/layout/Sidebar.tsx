@@ -17,6 +17,8 @@ import {
   Mail,
   ListOrdered,
   CreditCard,
+  MessageSquare,
+  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -29,6 +31,8 @@ const navItems = [
   { href: '/campaigns', icon: Megaphone, label: 'Campaigns' },
   { href: '/email-templates', icon: Mail, label: 'Email Templates' },
   { href: '/email-sequences', icon: ListOrdered, label: 'Sequences' },
+  { href: '/whatsapp', icon: MessageSquare, label: 'WhatsApp' },
+  { href: '/whatsapp-drip', icon: Send, label: 'WhatsApp Drip' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/team', icon: UsersRound, label: 'Team' },
   { href: '/billing', icon: CreditCard, label: 'Billing' },
