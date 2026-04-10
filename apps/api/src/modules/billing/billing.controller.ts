@@ -56,4 +56,14 @@ export class BillingController {
   cancelSubscription(@GetTenant() tenantId: string) {
     return this.billingService.cancelSubscription(tenantId);
   }
+
+  @Get('global-plans')
+  getGlobalPlans() {
+    return this.billingService.getGlobalPlans();
+  }
+
+  @Get('currency-detect')
+  detectCurrency(@GetTenant() tenantId: string) {
+    return this.billingService.detectCurrency('IN');
+  }
 }

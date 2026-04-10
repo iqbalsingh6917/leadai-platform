@@ -25,6 +25,14 @@ import { RolesModule } from './modules/roles/roles.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { PartnersModule } from './modules/partners/partners.module';
+import { ByoaiModule } from './modules/byoai/byoai.module';
+import { CommerceModule } from './modules/commerce/commerce.module';
+import { ComplianceModule } from './modules/compliance/compliance.module';
+import { AiMarketplaceModule } from './modules/ai-marketplace/ai-marketplace.module';
+import { VideoAiModule } from './modules/video-ai/video-ai.module';
+import { DeveloperModule } from './modules/developer/developer.module';
+import { SsoModule } from './modules/sso/sso.module';
+import { TelephonyModule } from './modules/telephony/telephony.module';
 
 @Module({
   imports: [
@@ -69,6 +77,14 @@ import { PartnersModule } from './modules/partners/partners.module';
     WorkspacesModule,
     ReportsModule,
     PartnersModule,
+    ByoaiModule,
+    CommerceModule,
+    ComplianceModule,
+    AiMarketplaceModule,
+    VideoAiModule,
+    DeveloperModule,
+    SsoModule,
+    TelephonyModule,
   ],
 })
 export class AppModule {}

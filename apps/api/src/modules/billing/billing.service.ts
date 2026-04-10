@@ -6,14 +6,33 @@ import { HttpService } from '@nestjs/axios';
 import * as crypto from 'crypto';
 import { firstValueFrom } from 'rxjs';
 import { Subscription, SubscriptionStatus, PlanId } from './entities/subscription.entity';
+import { GlobalBillingPlan, BillingCurrency } from './entities/global-billing-plan.entity';
 import { CreateOrderDto, VerifyPaymentDto } from './dto/billing.dto';
 import { PLANS } from './billing.plans';
+
+const CURRENCY_COUNTRY_MAP: Record<string, BillingCurrency> = {
+  IN: BillingCurrency.INR,
+  US: BillingCurrency.USD,
+  GB: BillingCurrency.GBP,
+  DE: BillingCurrency.EUR,
+  FR: BillingCurrency.EUR,
+  IT: BillingCurrency.EUR,
+  ES: BillingCurrency.EUR,
+};
+
+const MOCK_GLOBAL_PLANS = [
+  { name: 'Starter', currency: BillingCurrency.USD, priceMonthly: 29, priceAnnual: 278, features: ['5 Users', '1,000 Leads', 'Email Campaigns', 'Basic Analytics'] },
+  { name: 'Professional', currency: BillingCurrency.USD, priceMonthly: 79, priceAnnual: 758, features: ['20 Users', '10,000 Leads', 'WhatsApp Integration', 'Advanced Analytics', 'AI Copilot'] },
+  { name: 'Enterprise', currency: BillingCurrency.USD, priceMonthly: 199, priceAnnual: 1910, features: ['Unlimited Users', 'Unlimited Leads', 'White Label', 'SSO', 'Priority Support', 'Custom AI'] },
+];
 
 @Injectable()
 export class BillingService {
   constructor(
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
+    @InjectRepository(GlobalBillingPlan)
+    private readonly globalPlanRepo: Repository<GlobalBillingPlan>,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
@@ -100,5 +119,17 @@ export class BillingService {
     subscription.status = SubscriptionStatus.CANCELLED;
     subscription.cancelledAt = new Date();
     return this.subscriptionRepository.save(subscription);
+  }
+
+  async getGlobalPlans(): Promise<object[]> {
+    const stored = await this.globalPlanRepo.find({ where: { isActive: true } });
+    if (stored.length > 0) return stored;
+    return MOCK_GLOBAL_PLANS;
+  }
+
+  detectCurrency(countryCode: string): { currency: BillingCurrency; symbol: string } {
+    const currency = CURRENCY_COUNTRY_MAP[countryCode?.toUpperCase()] ?? BillingCurrency.INR;
+    const symbols: Record<BillingCurrency, string> = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+    return { currency, symbol: symbols[currency] };
   }
 }
