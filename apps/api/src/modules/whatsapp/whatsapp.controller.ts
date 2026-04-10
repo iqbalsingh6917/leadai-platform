@@ -96,6 +96,6 @@ export class WhatsAppController {
     @Res() res: Response,
   ) {
     const result = await this.whatsAppService.verifyWebhook(tenantId, mode, token, challenge);
-    res.status(200).send(result);
+    res.status(200).contentType('text/plain').send(result);
   }
 }

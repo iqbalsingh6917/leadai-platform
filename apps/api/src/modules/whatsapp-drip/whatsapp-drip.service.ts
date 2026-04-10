@@ -112,7 +112,8 @@ export class WhatsAppDripService {
     await this.findOne(campaignId, tenantId);
     let enrolled = 0;
 
-    for (let i = 0; i < dto.leadIds.length; i++) {
+    const count = Math.min(dto.leadIds.length, dto.phoneNumbers.length);
+    for (let i = 0; i < count; i++) {
       const leadId = dto.leadIds[i];
       const phoneNumber = dto.phoneNumbers[i];
 
