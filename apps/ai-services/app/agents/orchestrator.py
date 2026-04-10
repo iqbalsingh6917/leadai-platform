@@ -17,6 +17,9 @@ VALID_TASKS = {
     "detect_competitors",
     "handle_objections",
     "coach_deal",
+    "knowledge_graph_insights",
+    "knowledge_graph_similar",
+    "knowledge_graph_cross_industry",
 }
 
 
@@ -52,6 +55,7 @@ class OrchestratorAgent:
         from app.agents.competitor_agent import CompetitorAgent
         from app.agents.objection_handler_agent import ObjectionHandlerAgent
         from app.agents.deal_coach_agent import DealCoachAgent
+        from app.agents.knowledge_graph_agent import KnowledgeGraphAgent
 
         self.agents = {
             "score_lead": LeadScoringAgent(self.scoring_engine, self.llm_gateway),
@@ -66,6 +70,9 @@ class OrchestratorAgent:
             "detect_competitors": CompetitorAgent(self.llm_gateway),
             "handle_objections": ObjectionHandlerAgent(self.llm_gateway),
             "coach_deal": DealCoachAgent(self.llm_gateway),
+            "knowledge_graph_insights": KnowledgeGraphAgent(self.llm_gateway),
+            "knowledge_graph_similar": KnowledgeGraphAgent(self.llm_gateway),
+            "knowledge_graph_cross_industry": KnowledgeGraphAgent(self.llm_gateway),
         }
 
     def build_graph(self) -> StateGraph:

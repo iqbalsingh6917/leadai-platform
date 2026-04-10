@@ -33,6 +33,9 @@ import { VideoAiModule } from './modules/video-ai/video-ai.module';
 import { DeveloperModule } from './modules/developer/developer.module';
 import { SsoModule } from './modules/sso/sso.module';
 import { TelephonyModule } from './modules/telephony/telephony.module';
+import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module';
+import { AdIntegrationsModule } from './modules/ad-integrations/ad-integrations.module';
+import { ZapierMakeModule } from './modules/zapier-make/zapier-make.module';
 
 @Module({
   imports: [
@@ -85,6 +88,9 @@ import { TelephonyModule } from './modules/telephony/telephony.module';
     DeveloperModule,
     SsoModule,
     TelephonyModule,
+    KnowledgeGraphModule,
+    AdIntegrationsModule,
+    ZapierMakeModule,
   ],
 })
 export class AppModule {}
