@@ -17,8 +17,8 @@ api.interceptors.request.use((config) => {
           config.headers.Authorization = `Bearer ${token}`;
         }
       }
-    } catch {
-      // ignore JSON parse errors
+    } catch (err) {
+      console.warn('Failed to parse auth token from storage:', err);
     }
   }
   return config;

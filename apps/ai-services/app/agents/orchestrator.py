@@ -30,7 +30,7 @@ class OrchestratorAgent:
         workflow.add_node("route_task", self._route_task)
         workflow.add_node("score_lead", self._score_lead)
         workflow.add_node("analyze_intent", self._analyze_intent)
-        workflow.add_node("generate_summary", self._generate_summary)
+        workflow.add_node("generate_summary", self._generate_summary_async)
         workflow.add_node("format_output", self._format_output)
         workflow.add_node("handle_error", self._handle_error)
 
@@ -121,19 +121,6 @@ class OrchestratorAgent:
                 "recommended_actions": ["Review lead manually."],
             }
         return state
-
-    def _generate_summary(self, state: AgentState) -> AgentState:
-        import asyncio
-        import concurrent.futures
-        try:
-            # Always run in a new thread to avoid nested-event-loop issues when
-            # called from within a running loop (e.g. FastAPI / uvicorn).
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                future = pool.submit(asyncio.run, self._generate_summary_async(state))
-                return future.result()
-        except Exception as exc:
-            state["error"] = str(exc)
-            return state
 
     def _format_output(self, state: AgentState) -> AgentState:
         if not state.get("output_data"):

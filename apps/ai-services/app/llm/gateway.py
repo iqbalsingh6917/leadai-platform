@@ -12,6 +12,13 @@ class LLMGateway:
 
     PROVIDER_ORDER = ["openai", "anthropic", "google"]
 
+    # Default models per provider when no specific model is requested for that provider
+    DEFAULT_MODELS = {
+        "openai": "gpt-4o-mini",
+        "anthropic": "claude-3-haiku-20240307",
+        "google": "gemini-pro",
+    }
+
     def __init__(self, settings: Settings):
         self.settings = settings
 
@@ -24,19 +31,19 @@ class LLMGateway:
         max_tokens: int = 500,
     ) -> str:
         primary = provider or self.settings.default_llm_provider
-        selected_model = model or self.settings.default_model
-
         providers_to_try = [primary] + [p for p in self.PROVIDER_ORDER if p != primary]
 
         last_error = None
         for prov in providers_to_try:
+            # Use requested model for the primary provider; fall back to provider default otherwise
+            prov_model = (model or self.settings.default_model) if prov == primary else self.DEFAULT_MODELS[prov]
             try:
                 if prov == "openai":
-                    return await self.complete_openai(prompt, system, selected_model, max_tokens)
+                    return await self.complete_openai(prompt, system, prov_model, max_tokens)
                 elif prov == "anthropic":
-                    return await self.complete_anthropic(prompt, system, "claude-3-haiku-20240307", max_tokens)
+                    return await self.complete_anthropic(prompt, system, prov_model, max_tokens)
                 elif prov == "google":
-                    return await self.complete_google(prompt, system, "gemini-pro", max_tokens)
+                    return await self.complete_google(prompt, system, prov_model, max_tokens)
             except Exception as exc:
                 logger.warning("Provider %s failed: %s", prov, exc)
                 last_error = exc
