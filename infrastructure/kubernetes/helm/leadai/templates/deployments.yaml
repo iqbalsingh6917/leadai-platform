@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Release.Name }}-web
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-web
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-web
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: web
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          imagePullPolicy: {{ .Values.web.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.web.service.port }}
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://api.leadai.in/api"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.web.service.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.web.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources: {{- toYaml .Values.web.resources | nindent 12 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-ai-services
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Release.Name }}-ai-services
+spec:
+  replicas: {{ .Values.aiServices.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-ai-services
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-ai-services
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: ai-services
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.aiServices.image.repository }}:{{ .Values.aiServices.image.tag }}"
+          imagePullPolicy: {{ .Values.aiServices.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.aiServices.service.port }}
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: REDIS_URL
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: OPENAI_API_KEY
+            - name: API_BASE_URL
+              value: "http://{{ .Release.Name }}-api:{{ .Values.api.service.port }}/api"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.aiServices.service.port }}
+            initialDelaySeconds: 40
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.aiServices.service.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources: {{- toYaml .Values.aiServices.resources | nindent 12 }}

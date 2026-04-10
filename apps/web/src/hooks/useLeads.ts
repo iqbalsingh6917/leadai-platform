@@ -71,3 +71,48 @@ export function useDeleteLead() {
     },
   });
 }
+
+export function useBulkImport() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      formData: FormData,
+    ): Promise<{ imported: number; failed: number; errors: string[] }> => {
+      const response = await api.post<{ imported: number; failed: number; errors: string[] }>(
+        '/leads/bulk-import',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [LEADS_KEY] });
+    },
+  });
+}
+
+export function useAssignLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, assignedTo }: { id: string; assignedTo: string }) => {
+      const response = await api.post<Lead>(`/leads/${id}/assign`, { assignedTo });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [LEADS_KEY] });
+    },
+  });
+}
+
+export function useAutoAssignLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.post<Lead>(`/leads/${id}/auto-assign`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [LEADS_KEY] });
+    },
+  });
+}

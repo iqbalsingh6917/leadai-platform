@@ -12,21 +12,21 @@ LeadAI Platform is being built in 4 phases, progressing from a focused MVP to a 
 
 | # | Feature | Priority | Status |
 |---|---------|----------|--------|
-| 1 | Unified Lead Inbox (Facebook, Google, Manual) | P0 | 🔲 Planned |
-| 2 | Lead CRUD + Bulk Import (CSV) | P0 | 🔲 Planned |
-| 3 | AI Lead Scoring (basic) | P0 | 🔲 Planned |
-| 4 | Single Visual Pipeline (Drag & Drop) | P0 | 🔲 Planned |
-| 5 | WhatsApp Business API Integration | P0 | 🔲 Planned |
-| 6 | WhatsApp Drip Campaigns (basic) | P0 | 🔲 Planned |
-| 7 | Email Automation (sequences + templates) | P0 | 🔲 Planned |
-| 8 | Team Management + RBAC (3 roles) | P0 | 🔲 Planned |
-| 9 | Basic Subscription + Razorpay Billing | P0 | 🔲 Planned |
-| 10 | Performance Dashboard (leads, pipeline, campaigns) | P0 | 🔲 Planned |
-| 11 | Tenant Onboarding Flow (15-min setup) | P0 | 🔲 Planned |
-| 12 | Activity Log + Audit Trail | P1 | 🔲 Planned |
-| 13 | Lead Assignment + Round-Robin | P1 | 🔲 Planned |
-| 14 | Contact Management + Deal Linking | P1 | 🔲 Planned |
-| 15 | Basic Webhook Support | P1 | 🔲 Planned |
+| 1 | Unified Lead Inbox (Facebook, Google, Manual) | P0 | ✅ Done |
+| 2 | Lead CRUD + Bulk Import (CSV) | P0 | ✅ Done |
+| 3 | AI Lead Scoring (basic) | P0 | ✅ Done |
+| 4 | Single Visual Pipeline (Drag & Drop) | P0 | ✅ Done |
+| 5 | WhatsApp Business API Integration | P0 | ✅ Done |
+| 6 | WhatsApp Drip Campaigns (basic) | P0 | ✅ Done |
+| 7 | Email Automation (sequences + templates) | P0 | ✅ Done |
+| 8 | Team Management + RBAC (3 roles) | P0 | ✅ Done |
+| 9 | Basic Subscription + Razorpay Billing | P0 | ✅ Done |
+| 10 | Performance Dashboard (leads, pipeline, campaigns) | P0 | ✅ Done |
+| 11 | Tenant Onboarding Flow (15-min setup) | P0 | ✅ Done |
+| 12 | Activity Log + Audit Trail | P1 | ✅ Done |
+| 13 | Lead Assignment + Round-Robin | P1 | ✅ Done |
+| 14 | Contact Management + Deal Linking | P1 | ✅ Done |
+| 15 | Basic Webhook Support | P1 | ✅ Done |
 
 ---
 

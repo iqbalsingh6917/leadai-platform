@@ -2,39 +2,161 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  # ── API (NestJS) ──────────────────────────────────────────────────────────────
+  api-lint-build:
+    name: API — Lint & Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Lint
-        run: |
-          # TODO: Add lint commands when apps are scaffolded
-          # Example: cd apps/api && npm run lint
-          # Example: cd apps/web && npm run lint
-          echo "Lint step placeholder — to be implemented"
-
-      - name: Test
-        run: |
-          # TODO: Add test commands when apps are scaffolded
-          # Example: cd apps/api && npm run test
-          # Example: cd apps/web && npm run test
-          # Example: cd apps/ai-services && pytest
-          echo "Test step placeholder — to be implemented"
+        run: npm run lint
 
       - name: Build
-        run: |
-          # TODO: Add build commands when apps are scaffolded
-          # Example: cd apps/api && npm run build
-          # Example: cd apps/web && npm run build
-          echo "Build step placeholder — to be implemented"
+        run: npm run build
+
+  api-e2e:
+    name: API — E2E Tests
+    runs-on: ubuntu-latest
+    needs: api-lint-build
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: leadai_test
+          POSTGRES_USER: leadai
+          POSTGRES_PASSWORD: leadai_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: apps/api
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: leadai
+      DB_PASSWORD: leadai_dev
+      DB_NAME: leadai_test
+      JWT_SECRET: ci-test-secret-not-for-prod
+      AI_SERVICE_URL: http://localhost:8000
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+  # ── Web (Next.js) ─────────────────────────────────────────────────────────────
+  web-lint-build:
+    name: Web — Lint & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000/api
+
+  # ── AI Services (Python) ──────────────────────────────────────────────────────
+  ai-services-test:
+    name: AI Services — Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai-services
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: apps/ai-services/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tests/ -v --tb=short
+
+  # ── Mobile (Expo) ─────────────────────────────────────────────────────────────
+  mobile-typecheck:
+    name: Mobile — TypeScript Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit

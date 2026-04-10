@@ -67,6 +67,9 @@ lib64/
 .dmypy.json
 dmypy.json
 
+# Re-include app source lib directories
+!apps/*/src/lib/
+
 # ── Environment Files ─────────────────────────────────────────
 .env
 .env.local

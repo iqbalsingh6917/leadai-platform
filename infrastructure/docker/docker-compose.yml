@@ -89,6 +89,27 @@ services:
     networks:
       - leadai-network
 
+  neo4j:
+    image: neo4j:5.17
+    container_name: leadai-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/leadai_dev
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - leadai-network
+
   elasticsearch:
     image: elasticsearch:8.12.0
     container_name: leadai-elasticsearch
@@ -104,7 +125,72 @@ services:
     networks:
       - leadai-network
 
+  api:
+    build:
+      context: ../../apps/api
+      dockerfile: Dockerfile
+    container_name: leadai-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: leadai
+      DB_PASSWORD: leadai_dev
+      DB_NAME: leadai
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: leadai_dev
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+      AI_SERVICE_URL: http://ai-services:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    networks:
+      - leadai-network
+
+  web:
+    build:
+      context: ../../apps/web
+      dockerfile: Dockerfile
+    container_name: leadai-web
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000/api
+    depends_on:
+      - api
+    networks:
+      - leadai-network
+
+  ai-services:
+    build:
+      context: ../../apps/ai-services
+      dockerfile: Dockerfile
+    container_name: leadai-ai-services
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379
+      API_BASE_URL: http://api:3000/api
+    env_file:
+      - ../../.env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - leadai-network
+
 volumes:
+  neo4j_data:
   postgres_data:
   mongodb_data:
   redis_data:

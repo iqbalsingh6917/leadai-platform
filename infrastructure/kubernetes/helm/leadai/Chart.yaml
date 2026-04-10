@@ -1,0 +1,15 @@
+apiVersion: v2
+name: leadai
+description: LeadAI Platform — self-hosted Helm chart for on-premise / private cloud deployment
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - leadai
+  - crm
+  - ai
+  - saas
+home: https://leadai.in
+maintainers:
+  - name: LeadAI Engineering
+    email: engineering@leadai.in

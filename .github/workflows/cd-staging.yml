@@ -1,0 +1,121 @@
+name: CD — Staging
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
+  EKS_CLUSTER: leadai-staging
+  NAMESPACE: leadai-staging
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: tag
+        run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/api
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/leadai-api:${{ steps.tag.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/leadai-api:staging-latest
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/web
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/leadai-web:${{ steps.tag.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/leadai-web:staging-latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.STAGING_API_URL }}
+
+      - name: Build and push AI Services image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/ai-services
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/leadai-ai-services:${{ steps.tag.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/leadai-ai-services:staging-latest
+
+  deploy-staging:
+    name: Deploy to Staging (EKS)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install leadai ./infrastructure/kubernetes/helm/leadai \
+            --namespace ${{ env.NAMESPACE }} \
+            --create-namespace \
+            --set api.image.tag=${{ needs.build-and-push.outputs.image_tag }} \
+            --set web.image.tag=${{ needs.build-and-push.outputs.image_tag }} \
+            --set aiServices.image.tag=${{ needs.build-and-push.outputs.image_tag }} \
+            --set global.environment=staging \
+            --values infrastructure/kubernetes/helm/leadai/values-staging.yaml \
+            --wait --timeout 5m
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ *Staging deploy succeeded* — `${{ needs.build-and-push.outputs.image_tag }}` is live on https://staging.leadai.in"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ *Staging deploy failed* — see <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run>"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

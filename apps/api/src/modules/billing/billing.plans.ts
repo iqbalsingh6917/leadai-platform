@@ -1,0 +1,38 @@
+export const PLANS = {
+  starter: {
+    id: 'starter',
+    name: 'Starter',
+    price: 2999,
+    currency: 'INR',
+    usersLimit: 5,
+    leadsLimit: 1000,
+    campaignsLimit: 10,
+  },
+  growth: {
+    id: 'growth',
+    name: 'Growth',
+    price: 7999,
+    currency: 'INR',
+    usersLimit: 15,
+    leadsLimit: 5000,
+    campaignsLimit: 50,
+  },
+  scale: {
+    id: 'scale',
+    name: 'Scale',
+    price: 19999,
+    currency: 'INR',
+    usersLimit: 50,
+    leadsLimit: 25000,
+    campaignsLimit: 200,
+  },
+  enterprise: {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 0,
+    currency: 'INR',
+    usersLimit: -1,
+    leadsLimit: -1,
+    campaignsLimit: -1,
+  },
+};

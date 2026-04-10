@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { CopilotWidget } from '@/components/copilot/CopilotWidget';
 import { usePathname } from 'next/navigation';
 
 const pageTitles: Record<string, string> = {
@@ -11,14 +13,18 @@ const pageTitles: Record<string, string> = {
   '/pipeline': 'Pipeline',
   '/contacts': 'Contacts',
   '/campaigns': 'Campaigns',
+  '/workflows': 'Workflows',
+  '/email-templates': 'Email Templates',
+  '/email-sequences': 'Email Sequences',
   '/analytics': 'Analytics',
   '/settings': 'Settings',
+  '/billing': 'Billing',
+  '/whatsapp': 'WhatsApp',
+  '/whatsapp-drip': 'WhatsApp Drip',
 };
 
 function getTitle(pathname: string): string {
-  // Try exact match first
   if (pageTitles[pathname]) return pageTitles[pathname];
-  // Try prefix match
   const prefix = Object.keys(pageTitles).find((k) => pathname.startsWith(k + '/'));
   return prefix ? pageTitles[prefix] : 'LeadAI';
 }
@@ -37,6 +43,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      <OnboardingWizard />
+      <CopilotWidget />
     </div>
   );
 }

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-api
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.api.service.type }}
+  selector:
+    app: {{ .Release.Name }}-api
+  ports:
+    - port: {{ .Values.api.service.port }}
+      targetPort: {{ .Values.api.service.port }}
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.web.service.type }}
+  selector:
+    app: {{ .Release.Name }}-web
+  ports:
+    - port: {{ .Values.web.service.port }}
+      targetPort: {{ .Values.web.service.port }}
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-ai-services
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.aiServices.service.type }}
+  selector:
+    app: {{ .Release.Name }}-ai-services
+  ports:
+    - port: {{ .Values.aiServices.service.port }}
+      targetPort: {{ .Values.aiServices.service.port }}
+      name: http
