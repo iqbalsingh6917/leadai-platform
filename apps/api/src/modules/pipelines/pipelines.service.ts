@@ -66,7 +66,11 @@ export class PipelinesService {
   }
 
   async createDeal(dto: CreateDealDto, tenantId: string) {
-    const stage = await this.stageRepository.findOne({ where: { id: dto.stageId } });
+    const stage = await this.stageRepository
+      .createQueryBuilder('stage')
+      .innerJoin('stage.pipeline', 'pipeline', 'pipeline.tenantId = :tenantId', { tenantId })
+      .where('stage.id = :id', { id: dto.stageId })
+      .getOne();
     if (!stage) throw new NotFoundException('Stage not found');
     const deal = this.dealRepository.create({ ...dto, tenantId });
     return this.dealRepository.save(deal);
@@ -88,7 +92,11 @@ export class PipelinesService {
   async moveDeal(id: string, dto: MoveDealDto, tenantId: string) {
     const deal = await this.dealRepository.findOne({ where: { id, tenantId } });
     if (!deal) throw new NotFoundException('Deal not found');
-    const stage = await this.stageRepository.findOne({ where: { id: dto.stageId } });
+    const stage = await this.stageRepository
+      .createQueryBuilder('stage')
+      .innerJoin('stage.pipeline', 'pipeline', 'pipeline.tenantId = :tenantId', { tenantId })
+      .where('stage.id = :id', { id: dto.stageId })
+      .getOne();
     if (!stage) throw new NotFoundException('Stage not found');
     deal.stageId = dto.stageId;
     return this.dealRepository.save(deal);

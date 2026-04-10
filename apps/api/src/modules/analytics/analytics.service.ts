@@ -92,7 +92,9 @@ export class AnalyticsService {
       status: c.status,
       budget: Number(c.budget) || 0,
       spent: Number(c.spent) || 0,
-      roi: c.budget && c.spent ? ((Number(c.budget) - Number(c.spent)) / Number(c.budget)) * 100 : 0,
+      roi: c.budget && c.spent && Number(c.spent) > 0
+        ? ((Number(c.budget) - Number(c.spent)) / Number(c.spent)) * 100
+        : 0,
     }));
   }
 }
