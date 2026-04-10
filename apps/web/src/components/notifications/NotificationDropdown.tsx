@@ -14,6 +14,9 @@ import {
 import { cn } from '@/lib/utils';
 import { useMarkRead, useMarkAllRead, Notification } from '@/hooks/useNotifications';
 
+/** Maximum number of notifications shown in the dropdown */
+const MAX_DISPLAYED_NOTIFICATIONS = 10;
+
 const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: '1',
@@ -134,7 +137,7 @@ export function NotificationDropdown({
 
   if (!open) return null;
 
-  const displayed = items.slice(0, 10);
+  const displayed = items.slice(0, MAX_DISPLAYED_NOTIFICATIONS);
   const unreadCount = items.filter((n) => !n.isRead).length;
 
   function handleMarkRead(id: string) {

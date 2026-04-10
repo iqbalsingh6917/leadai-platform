@@ -18,6 +18,8 @@ export interface Notification {
 
 const NOTIFICATIONS_KEY = 'notifications';
 const UNREAD_COUNT_KEY = 'notifications-unread-count';
+/** How often (ms) to poll the notifications API for new data */
+const NOTIFICATION_POLL_INTERVAL = 30_000;
 
 export function useNotifications(onlyUnread = false) {
   return useQuery({
@@ -27,7 +29,7 @@ export function useNotifications(onlyUnread = false) {
       const response = await api.get<Notification[]>(`/notifications${params}`);
       return response.data;
     },
-    refetchInterval: 30000,
+    refetchInterval: NOTIFICATION_POLL_INTERVAL,
   });
 }
 
@@ -38,7 +40,7 @@ export function useUnreadCount() {
       const response = await api.get<{ count: number }>('/notifications/unread-count');
       return response.data.count;
     },
-    refetchInterval: 30000,
+    refetchInterval: NOTIFICATION_POLL_INTERVAL,
   });
 }
 

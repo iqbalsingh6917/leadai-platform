@@ -14,6 +14,8 @@ import { ActivityAction, ActivityEntityType } from '../activity/entities/activit
 export class LeadsService {
   private readonly logger = new Logger(LeadsService.name);
   private readonly aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+  /** Timeout (ms) for calls to the AI scoring service */
+  private readonly aiScoringTimeoutMs = parseInt(process.env.AI_SCORING_TIMEOUT_MS ?? '5000', 10);
 
   constructor(
     @InjectRepository(Lead)
@@ -120,7 +122,7 @@ export class LeadsService {
         this.httpService.post<{ score: number }>(
           `${this.aiServiceUrl}/api/v1/scoring/score`,
           payload,
-          { timeout: 5000 },
+          { timeout: this.aiScoringTimeoutMs },
         ),
       );
 
