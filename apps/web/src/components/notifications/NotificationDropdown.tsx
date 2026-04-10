@@ -29,7 +29,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
     id: '2',
     type: 'lead_scored',
     title: 'Lead Score Updated',
-    message: 'John Doe\'s score jumped to 92 — high priority!',
+    message: "John Doe's score jumped to 92 — high priority!",
     isRead: false,
     userId: 'u1',
     tenantId: 't1',
