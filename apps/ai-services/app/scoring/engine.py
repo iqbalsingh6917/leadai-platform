@@ -6,7 +6,7 @@ class LeadScoringEngine:
     Phase 1: Rule-based BANT scoring.
     Phase 2: Will be replaced with ML model trained on conversion data.
 
-    Scoring signals (total max 100 pts):
+    Scoring signals (total max MAX_SCORE pts):
     - has_company (15 pts): Lead has company name
     - has_email (10 pts): Lead has email
     - has_phone (10 pts): Lead has phone number
@@ -16,6 +16,13 @@ class LeadScoringEngine:
     - has_tags (5 pts): Lead has tags
     - name_completeness (10 pts): Both first and last name present
     """
+
+    # Maximum possible score (0-100 scale used throughout the platform)
+    MAX_SCORE = 100
+
+    # Tier thresholds: hot >= HOT_THRESHOLD, warm >= WARM_THRESHOLD, cold < WARM_THRESHOLD
+    HOT_THRESHOLD = 70
+    WARM_THRESHOLD = 40
 
     SOURCE_SCORES = {
         "referral": 20,
@@ -67,11 +74,11 @@ class LeadScoringEngine:
             else 0
         )
 
-        total = min(sum(signals.values()), 100)
+        total = min(sum(signals.values()), self.MAX_SCORE)
 
-        if total >= 70:
+        if total >= self.HOT_THRESHOLD:
             tier = "hot"
-        elif total >= 40:
+        elif total >= self.WARM_THRESHOLD:
             tier = "warm"
         else:
             tier = "cold"

@@ -119,7 +119,7 @@ services:
       DB_USERNAME: leadai
       DB_PASSWORD: leadai_dev
       DB_NAME: leadai
-      JWT_SECRET: dev-secret-change-in-production
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
       AI_SERVICE_URL: http://ai-services:8000
     depends_on:
       postgres:

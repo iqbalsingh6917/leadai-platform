@@ -70,6 +70,11 @@ export class LeadsService {
   }
 
   async triggerScoring(leadId: string, lead: Lead, tenantId: string): Promise<void> {
+    /**
+     * Fire-and-forget call to the AI scoring service.
+     * Scoring failures are logged as warnings but do NOT propagate to the caller —
+     * the lead create/update operation must succeed regardless of AI availability.
+     */
     try {
       const payload = {
         lead: {

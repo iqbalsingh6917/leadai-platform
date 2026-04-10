@@ -35,8 +35,11 @@ class LLMGateway:
 
         last_error = None
         for prov in providers_to_try:
-            # Use requested model for the primary provider; fall back to provider default otherwise
-            prov_model = (model or self.settings.default_model) if prov == primary else self.DEFAULT_MODELS[prov]
+            # Use the requested model for the primary provider; fall back to the provider's default model otherwise
+            if prov == primary:
+                prov_model = model or self.settings.default_model
+            else:
+                prov_model = self.DEFAULT_MODELS[prov]
             try:
                 if prov == "openai":
                     return await self.complete_openai(prompt, system, prov_model, max_tokens)
