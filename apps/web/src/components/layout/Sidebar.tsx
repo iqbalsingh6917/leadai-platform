@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  UsersRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/contacts', icon: Contact, label: 'Contacts' },
   { href: '/campaigns', icon: Megaphone, label: 'Campaigns' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/team', icon: UsersRound, label: 'Team' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 

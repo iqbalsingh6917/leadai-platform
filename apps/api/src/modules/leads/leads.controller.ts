@@ -8,9 +8,12 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetTenant } from '../../common/decorators/tenant.decorator';
@@ -18,6 +21,7 @@ import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { LeadFilterDto } from './dto/lead-filter.dto';
+import { AssignLeadDto } from './dto/assign-lead.dto';
 
 @ApiTags('leads')
 @ApiBearerAuth()
@@ -50,5 +54,28 @@ export class LeadsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @GetTenant() tenantId: string) {
     return this.leadsService.remove(id, tenantId);
+  }
+
+  @Post('bulk-import')
+  @UseInterceptors(FileInterceptor('file'))
+  bulkImport(
+    @UploadedFile() file: Express.Multer.File,
+    @GetTenant() tenantId: string,
+  ) {
+    return this.leadsService.bulkImport(file.buffer, tenantId);
+  }
+
+  @Post(':id/assign')
+  assignLead(
+    @Param('id') id: string,
+    @Body() dto: AssignLeadDto,
+    @GetTenant() tenantId: string,
+  ) {
+    return this.leadsService.assign(id, dto.assignedTo, tenantId);
+  }
+
+  @Post(':id/auto-assign')
+  autoAssignLead(@Param('id') id: string, @GetTenant() tenantId: string) {
+    return this.leadsService.autoAssign(id, tenantId);
   }
 }

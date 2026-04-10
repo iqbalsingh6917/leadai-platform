@@ -10,6 +10,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { TeamModule } from './modules/team/team.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ActivityModule,
     WebhooksModule,
     NotificationsModule,
+    TeamModule,
   ],
 })
 export class AppModule {}

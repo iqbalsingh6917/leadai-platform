@@ -1,12 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import { Lead } from '@/types/lead';
 import { Badge } from '@/components/ui/Badge';
 import { LeadScoreBadge } from './LeadScoreBadge';
 import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
-import { Edit, ArrowLeft } from 'lucide-react';
+import { Select } from '@/components/ui/Select';
+import { Edit, ArrowLeft, UserCheck, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAssignLead, useAutoAssignLead } from '@/hooks/useLeads';
+import { useTeamMembers } from '@/hooks/useTeam';
+import toast from 'react-hot-toast';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -24,6 +29,40 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'info' | 
 
 export function LeadDetail({ lead, onEdit }: LeadDetailProps) {
   const router = useRouter();
+  const { mutateAsync: assignLead, isPending: isAssigning } = useAssignLead();
+  const { mutateAsync: autoAssignLead, isPending: isAutoAssigning } = useAutoAssignLead();
+  const { data: teamMembers } = useTeamMembers();
+  const [reassignId, setReassignId] = useState('');
+
+  const agentOptions =
+    teamMembers
+      ?.filter((m) => m.isActive)
+      .map((m) => ({ value: m.id, label: `${m.firstName} ${m.lastName}` })) ?? [];
+
+  const assignedMember = teamMembers?.find((m) => m.id === lead.assignedTo);
+
+  async function handleAutoAssign() {
+    try {
+      await autoAssignLead(lead.id);
+      toast.success('Lead auto-assigned');
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Auto-assign failed';
+      toast.error(msg);
+    }
+  }
+
+  async function handleReassign() {
+    if (!reassignId) return;
+    try {
+      await assignLead({ id: lead.id, assignedTo: reassignId });
+      toast.success('Lead reassigned');
+      setReassignId('');
+    } catch {
+      toast.error('Reassign failed');
+    }
+  }
 
   return (
     <div>
@@ -73,6 +112,46 @@ export function LeadDetail({ lead, onEdit }: LeadDetailProps) {
               <div>
                 <p className="text-xs text-slate-500 mb-1">Created</p>
                 <p className="text-sm text-slate-800">{formatDate(lead.createdAt)}</p>
+              </div>
+            </div>
+
+            {/* Assignment */}
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <p className="text-xs text-slate-500 mb-2">Assigned To</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-slate-800">
+                  {assignedMember
+                    ? `${assignedMember.firstName} ${assignedMember.lastName}`
+                    : lead.assignedTo || '—'}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAutoAssign}
+                  disabled={isAutoAssigning}
+                >
+                  <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                  {isAutoAssigning ? 'Assigning…' : 'Auto-assign'}
+                </Button>
+                {lead.assignedTo && (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      options={agentOptions}
+                      value={reassignId}
+                      placeholder="Select member…"
+                      onChange={(e) => setReassignId(e.target.value)}
+                      className="text-sm py-1"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleReassign}
+                      disabled={!reassignId || isAssigning}
+                    >
+                      <UserCheck className="w-3.5 h-3.5 mr-1" />
+                      Reassign
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

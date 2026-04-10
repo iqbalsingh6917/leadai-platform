@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
@@ -11,6 +11,7 @@ import { PageSpinner } from '@/components/ui/Spinner';
 import { LeadTable } from '@/components/leads/LeadTable';
 import { LeadFilters } from '@/components/leads/LeadFilters';
 import { LeadForm } from '@/components/leads/LeadForm';
+import { BulkImportModal } from '@/components/leads/BulkImportModal';
 import { useLeads, useCreateLead } from '@/hooks/useLeads';
 import { Lead, CreateLead } from '@/types/lead';
 import toast from 'react-hot-toast';
@@ -31,6 +32,7 @@ export default function LeadsPage() {
   const [source, setSource] = useState<Lead['source'] | ''>('');
   const [page, setPage] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [sortKey, setSortKey] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
@@ -64,10 +66,16 @@ export default function LeadsPage() {
           <h2 className="text-lg font-semibold text-slate-900">All Leads</h2>
           <p className="text-sm text-slate-500">{total} total leads</p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 mr-1" />
-          Add Lead
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowImportModal(true)}>
+            <Upload className="w-4 h-4 mr-1" />
+            Import CSV
+          </Button>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4 mr-1" />
+            Add Lead
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -110,6 +118,9 @@ export default function LeadsPage() {
           </>
         )}
       </div>
+
+      {/* Import Modal */}
+      <BulkImportModal isOpen={showImportModal} onClose={() => setShowImportModal(false)} />
 
       {/* Add Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Lead" size="lg">

@@ -1,14 +1,16 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, Not, In } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { Lead } from './entities/lead.entity';
+import { parse } from 'csv-parse/sync';
+import { Lead, LeadSource, LeadStatus } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { LeadFilterDto } from './dto/lead-filter.dto';
 import { ActivityService } from '../activity/activity.service';
 import { ActivityAction, ActivityEntityType } from '../activity/entities/activity-log.entity';
+import { User, UserRole } from '../auth/entities/user.entity';
 
 @Injectable()
 export class LeadsService {
@@ -20,6 +22,8 @@ export class LeadsService {
   constructor(
     @InjectRepository(Lead)
     private readonly leadRepository: Repository<Lead>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly httpService: HttpService,
     private readonly activityService: ActivityService,
   ) {}
@@ -93,6 +97,119 @@ export class LeadsService {
       tenantId,
       description: 'Lead deleted',
     });
+  }
+
+  async assign(id: string, assignedTo: string, tenantId: string): Promise<Lead> {
+    const lead = await this.findOne(id, tenantId);
+    lead.assignedTo = assignedTo;
+    const saved = await this.leadRepository.save(lead);
+    await this.activityService.log({
+      entityType: ActivityEntityType.LEAD,
+      entityId: saved.id,
+      action: ActivityAction.ASSIGNED,
+      tenantId,
+      metadata: { assignedTo },
+      description: 'Lead assigned',
+    });
+    return saved;
+  }
+
+  async autoAssign(id: string, tenantId: string): Promise<Lead> {
+    const agents = await this.userRepository.find({
+      where: { tenantId, role: UserRole.AGENT, isActive: true },
+    });
+
+    if (agents.length === 0) {
+      throw new BadRequestException('No active agents available');
+    }
+
+    // Count active leads per agent (not converted or lost)
+    const counts = await Promise.all(
+      agents.map(async (agent) => {
+        const count = await this.leadRepository.count({
+          where: {
+            tenantId,
+            assignedTo: agent.id,
+            status: Not(In([LeadStatus.CONVERTED, LeadStatus.LOST])),
+          },
+        });
+        return { agent, count };
+      }),
+    );
+
+    counts.sort((a, b) => a.count - b.count);
+    const pickedAgent = counts[0].agent;
+
+    return this.assign(id, pickedAgent.id, tenantId);
+  }
+
+  async bulkImport(
+    fileBuffer: Buffer,
+    tenantId: string,
+  ): Promise<{ imported: number; failed: number; errors: string[] }> {
+    const rows: Record<string, string>[] = parse(fileBuffer, {
+      columns: true,
+      skip_empty_lines: true,
+    });
+
+    let imported = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    const validSources = Object.values(LeadSource) as string[];
+    const validStatuses = Object.values(LeadStatus) as string[];
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNum = i + 2; // 1-indexed + header row
+
+      if (!row.firstName || !row.firstName.trim()) {
+        errors.push(`Row ${rowNum}: firstName is required`);
+        failed++;
+        continue;
+      }
+      if (!row.lastName || !row.lastName.trim()) {
+        errors.push(`Row ${rowNum}: lastName is required`);
+        failed++;
+        continue;
+      }
+
+      const source = validSources.includes(row.source)
+        ? (row.source as LeadSource)
+        : LeadSource.OTHER;
+
+      const status = validStatuses.includes(row.status)
+        ? (row.status as LeadStatus)
+        : LeadStatus.NEW;
+
+      const tags = row.tags
+        ? row.tags.split(',').map((t) => t.trim()).filter(Boolean)
+        : [];
+
+      try {
+        const lead = this.leadRepository.create({
+          firstName: row.firstName.trim(),
+          lastName: row.lastName.trim(),
+          email: row.email?.trim() || undefined,
+          phone: row.phone?.trim() || undefined,
+          company: row.company?.trim() || undefined,
+          notes: row.notes?.trim() || undefined,
+          source,
+          status,
+          tags,
+          tenantId,
+        });
+
+        const saved = await this.leadRepository.save(lead);
+        await this.triggerScoring(saved.id, saved, tenantId);
+        imported++;
+      } catch (err) {
+        errors.push(`Row ${rowNum}: ${(err as Error).message}`);
+        failed++;
+      }
+    }
+
+    return { imported, failed, errors };
   }
 
   async triggerScoring(leadId: string, lead: Lead, tenantId: string): Promise<void> {
