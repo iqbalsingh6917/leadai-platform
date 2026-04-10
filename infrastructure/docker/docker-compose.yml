@@ -104,6 +104,65 @@ services:
     networks:
       - leadai-network
 
+  api:
+    build:
+      context: ../../apps/api
+      dockerfile: Dockerfile
+    container_name: leadai-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: leadai
+      DB_PASSWORD: leadai_dev
+      DB_NAME: leadai
+      JWT_SECRET: dev-secret-change-in-production
+      AI_SERVICE_URL: http://ai-services:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - leadai-network
+
+  web:
+    build:
+      context: ../../apps/web
+      dockerfile: Dockerfile
+    container_name: leadai-web
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000/api
+    depends_on:
+      - api
+    networks:
+      - leadai-network
+
+  ai-services:
+    build:
+      context: ../../apps/ai-services
+      dockerfile: Dockerfile
+    container_name: leadai-ai-services
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379
+      API_BASE_URL: http://api:3000/api
+    env_file:
+      - ../../.env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - leadai-network
+
 volumes:
   postgres_data:
   mongodb_data:

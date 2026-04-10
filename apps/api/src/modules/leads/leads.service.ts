@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { Lead } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
@@ -8,9 +10,13 @@ import { LeadFilterDto } from './dto/lead-filter.dto';
 
 @Injectable()
 export class LeadsService {
+  private readonly logger = new Logger(LeadsService.name);
+  private readonly aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+
   constructor(
     @InjectRepository(Lead)
     private readonly leadRepository: Repository<Lead>,
+    private readonly httpService: HttpService,
   ) {}
 
   async findAll(tenantId: string, filters: LeadFilterDto) {
@@ -45,17 +51,58 @@ export class LeadsService {
 
   async create(dto: CreateLeadDto, tenantId: string) {
     const lead = this.leadRepository.create({ ...dto, tenantId });
-    return this.leadRepository.save(lead);
+    const saved = await this.leadRepository.save(lead);
+    await this.triggerScoring(saved.id, saved, tenantId);
+    return saved;
   }
 
   async update(id: string, dto: UpdateLeadDto, tenantId: string) {
     const lead = await this.findOne(id, tenantId);
     Object.assign(lead, dto);
-    return this.leadRepository.save(lead);
+    const saved = await this.leadRepository.save(lead);
+    await this.triggerScoring(saved.id, saved, tenantId);
+    return saved;
   }
 
   async remove(id: string, tenantId: string) {
     const lead = await this.findOne(id, tenantId);
     await this.leadRepository.remove(lead);
+  }
+
+  async triggerScoring(leadId: string, lead: Lead, tenantId: string): Promise<void> {
+    try {
+      const payload = {
+        lead: {
+          id: lead.id,
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          email: lead.email ?? null,
+          phone: lead.phone ?? null,
+          company: lead.company ?? null,
+          source: lead.source,
+          status: lead.status,
+          notes: lead.notes ?? null,
+          tags: lead.tags ?? [],
+        },
+        tenant_id: tenantId,
+      };
+
+      const response = await firstValueFrom(
+        this.httpService.post<{ score: number }>(
+          `${this.aiServiceUrl}/api/v1/scoring/score`,
+          payload,
+          { timeout: 5000 },
+        ),
+      );
+
+      const score = response.data?.score;
+      if (typeof score === 'number') {
+        await this.leadRepository.update(leadId, { score });
+      }
+    } catch (error) {
+      this.logger.warn(
+        `AI scoring failed for lead ${leadId}: ${(error as Error).message}`,
+      );
+    }
   }
 }
