@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { usePathname } from 'next/navigation';
 
 const pageTitles: Record<string, string> = {
@@ -11,8 +12,11 @@ const pageTitles: Record<string, string> = {
   '/pipeline': 'Pipeline',
   '/contacts': 'Contacts',
   '/campaigns': 'Campaigns',
+  '/email-templates': 'Email Templates',
+  '/email-sequences': 'Email Sequences',
   '/analytics': 'Analytics',
   '/settings': 'Settings',
+  '/billing': 'Billing',
 };
 
 function getTitle(pathname: string): string {
@@ -37,6 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      <OnboardingWizard />
     </div>
   );
 }

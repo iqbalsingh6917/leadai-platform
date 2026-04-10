@@ -11,6 +11,9 @@ import { ActivityModule } from './modules/activity/activity.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TeamModule } from './modules/team/team.module';
+import { EmailTemplatesModule } from './modules/email-templates/email-templates.module';
+import { EmailSequencesModule } from './modules/email-sequences/email-sequences.module';
+import { BillingModule } from './modules/billing/billing.module';
 
 @Module({
   imports: [
@@ -41,6 +44,9 @@ import { TeamModule } from './modules/team/team.module';
     WebhooksModule,
     NotificationsModule,
     TeamModule,
+    EmailTemplatesModule,
+    EmailSequencesModule,
+    BillingModule,
   ],
 })
 export class AppModule {}

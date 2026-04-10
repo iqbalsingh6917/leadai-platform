@@ -14,6 +14,9 @@ import {
   ChevronRight,
   Zap,
   UsersRound,
+  Mail,
+  ListOrdered,
+  CreditCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -24,8 +27,11 @@ const navItems = [
   { href: '/pipeline', icon: GitBranch, label: 'Pipeline' },
   { href: '/contacts', icon: Contact, label: 'Contacts' },
   { href: '/campaigns', icon: Megaphone, label: 'Campaigns' },
+  { href: '/email-templates', icon: Mail, label: 'Email Templates' },
+  { href: '/email-sequences', icon: ListOrdered, label: 'Sequences' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/team', icon: UsersRound, label: 'Team' },
+  { href: '/billing', icon: CreditCard, label: 'Billing' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
