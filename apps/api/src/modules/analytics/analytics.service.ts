@@ -22,26 +22,29 @@ export class AnalyticsService {
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    const [totalLeads, lastMonthLeads] = await Promise.all([
+    const [totalLeads, thisMonthLeads, lastMonthLeads] = await Promise.all([
       this.leadRepository.count({ where: { tenantId } }),
+      this.leadRepository.count({
+        where: { tenantId, createdAt: Between(thisMonthStart, now) as any },
+      }),
       this.leadRepository.count({
         where: { tenantId, createdAt: Between(lastMonthStart, lastMonthEnd) as any },
       }),
     ]);
 
-    const [qualifiedLeads, lastMonthQualified] = await Promise.all([
+    const [qualifiedLeads, qualifiedThisMonth, qualifiedLastMonth] = await Promise.all([
       this.leadRepository.count({ where: { tenantId, status: LeadStatus.QUALIFIED } }),
+      this.leadRepository.count({
+        where: { tenantId, status: LeadStatus.QUALIFIED, createdAt: Between(thisMonthStart, now) as any },
+      }),
       this.leadRepository.count({
         where: { tenantId, status: LeadStatus.QUALIFIED, createdAt: Between(lastMonthStart, lastMonthEnd) as any },
       }),
     ]);
 
-    const [convertedLeads, totalLeadsThisMonth] = await Promise.all([
-      this.leadRepository.count({ where: { tenantId, status: LeadStatus.CONVERTED } }),
-      this.leadRepository.count({
-        where: { tenantId, createdAt: Between(thisMonthStart, now) as any },
-      }),
-    ]);
+    const convertedLeads = await this.leadRepository.count({
+      where: { tenantId, status: LeadStatus.CONVERTED },
+    });
 
     const deals = await this.dealRepository.find({ where: { tenantId } });
     const pipelineValue = deals.reduce((sum, d) => sum + Number(d.value), 0);
@@ -50,9 +53,9 @@ export class AnalyticsService {
 
     return {
       totalLeads,
-      totalLeadsChange: lastMonthLeads > 0 ? ((totalLeadsThisMonth - lastMonthLeads) / lastMonthLeads) * 100 : 0,
+      totalLeadsChange: lastMonthLeads > 0 ? ((thisMonthLeads - lastMonthLeads) / lastMonthLeads) * 100 : 0,
       qualifiedLeads,
-      qualifiedLeadsChange: lastMonthQualified > 0 ? ((qualifiedLeads - lastMonthQualified) / lastMonthQualified) * 100 : 0,
+      qualifiedLeadsChange: qualifiedLastMonth > 0 ? ((qualifiedThisMonth - qualifiedLastMonth) / qualifiedLastMonth) * 100 : 0,
       conversionRate: Math.round(conversionRate * 10) / 10,
       conversionRateChange: 0,
       pipelineValue,
@@ -92,8 +95,9 @@ export class AnalyticsService {
       status: c.status,
       budget: Number(c.budget) || 0,
       spent: Number(c.spent) || 0,
-      roi: c.budget && c.spent && Number(c.spent) > 0
-        ? ((Number(c.budget) - Number(c.spent)) / Number(c.spent)) * 100
+      // cost-efficiency: % of budget remaining (positive = under budget, negative = over budget)
+      roi: c.budget && Number(c.budget) > 0
+        ? ((Number(c.budget) - Number(c.spent)) / Number(c.budget)) * 100
         : 0,
     }));
   }
