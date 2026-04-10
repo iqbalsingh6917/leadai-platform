@@ -77,7 +77,7 @@ export class BillingService {
 
     const now = new Date();
     const periodEnd = new Date(now);
-    periodEnd.setDate(periodEnd.getDate() + 30);
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
 
     let subscription = await this.subscriptionRepository.findOne({ where: { tenantId } });
     if (!subscription) {

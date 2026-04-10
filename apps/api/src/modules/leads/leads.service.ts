@@ -129,7 +129,7 @@ export class LeadsService {
     }
 
     // Fetch active lead counts per agent in a single query
-    const countRows: { assignedTo: string; count: string }[] = await this.leadRepository
+    const agentLeadCounts: { assignedTo: string; count: string }[] = await this.leadRepository
       .createQueryBuilder('lead')
       .select('lead.assignedTo', 'assignedTo')
       .addSelect('COUNT(lead.id)', 'count')
@@ -144,7 +144,7 @@ export class LeadsService {
       .getRawMany();
 
     const countMap = new Map<string, number>(
-      countRows.map((r) => [r.assignedTo, parseInt(r.count, 10)]),
+      agentLeadCounts.map((r) => [r.assignedTo, parseInt(r.count, 10)]),
     );
 
     const pickedAgent = agents.reduce((min, agent) => {

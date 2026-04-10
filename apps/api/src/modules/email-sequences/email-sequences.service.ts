@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { EmailSequence } from './entities/sequence.entity';
 import { EmailSequenceStep } from './entities/sequence-step.entity';
 import { SequenceEnrollment, EnrollmentStatus } from './entities/sequence-enrollment.entity';
@@ -15,6 +15,7 @@ export class EmailSequencesService {
     private readonly stepRepository: Repository<EmailSequenceStep>,
     @InjectRepository(SequenceEnrollment)
     private readonly enrollmentRepository: Repository<SequenceEnrollment>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findAll(tenantId: string, filters: { page?: number; limit?: number }) {
@@ -51,8 +52,12 @@ export class EmailSequencesService {
     const sequence = await this.findOne(id, tenantId);
 
     if (dto.steps !== undefined) {
-      await this.stepRepository.delete({ sequence: { id } });
-      sequence.steps = dto.steps.map((s) => this.stepRepository.create(s));
+      await this.dataSource.transaction(async (manager) => {
+        await manager.delete(EmailSequenceStep, { sequence: { id } });
+        sequence.steps = dto.steps!.map((s) => this.stepRepository.create(s));
+        await manager.save(EmailSequence, sequence);
+      });
+      return this.findOne(id, tenantId);
     }
 
     Object.assign(sequence, {

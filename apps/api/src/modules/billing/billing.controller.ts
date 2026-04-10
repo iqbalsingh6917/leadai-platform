@@ -21,6 +21,7 @@ import { CreateOrderDto, VerifyPaymentDto } from './dto/billing.dto';
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
+  /** Intentionally public — pricing plans are shown on the marketing/upgrade page without login */
   @Get('plans')
   getPlans() {
     return this.billingService.getPlans();
